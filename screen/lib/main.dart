@@ -50,41 +50,46 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
     setState(() {
       _isLoading = true;
-      _result = null;
+      _result = "Waking up server... (first request can take up to 50 sec)";
     });
 
     try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          "Building_Type": _controllers['Building_Type']!.text,
-          "Square_Footage": int.parse(_controllers['Square_Footage']!.text),
-          "Number_of_Occupants": int.parse(
-            _controllers['Number_of_Occupants']!.text,
-          ),
-          "Appliances_Used": int.parse(_controllers['Appliances_Used']!.text),
-          "Average_Temperature": double.parse(
-            _controllers['Average_Temperature']!.text,
-          ),
-          "Day_of_Week": _controllers['Day_of_Week']!.text,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse(apiUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: json.encode({
+              "Building_Type": _controllers['Building_Type']!.text,
+              "Square_Footage": int.parse(_controllers['Square_Footage']!.text),
+              "Number_of_Occupants": int.parse(
+                _controllers['Number_of_Occupants']!.text,
+              ),
+              "Appliances_Used": int.parse(
+                _controllers['Appliances_Used']!.text,
+              ),
+              "Average_Temperature": double.parse(
+                _controllers['Average_Temperature']!.text,
+              ),
+              "Day_of_Week": _controllers['Day_of_Week']!.text,
+            }),
+          )
+          .timeout(const Duration(seconds: 60)); // ← 60 sec timeout
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
           _result =
-              "Predicted: ${data['predicted_energy_kwh']} kWh\n(Model: ${data['model']})";
+              "SUCCESS!\n${data['predicted_energy_kwh']} kWh\n${data['model']}";
         });
       } else {
         setState(() {
-          _result = "Error: ${response.statusCode} - ${response.body}";
+          _result = "Error ${response.statusCode}: ${response.body}";
         });
       }
     } catch (e) {
       setState(() {
-        _result = "Network Error: $e\n(Check API URL and connection)";
+        _result =
+            "Server is waking up or network issue.\nOpen this first:\nhttps://summative-model.onrender.com/docs\nThen try again.";
       });
     } finally {
       setState(() => _isLoading = false);
