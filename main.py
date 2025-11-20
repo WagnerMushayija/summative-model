@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import joblib
 import pandas as pd
+import os
 
 # Load model
 model = joblib.load("models/best_energy_model_correct.pkl")
@@ -57,3 +58,9 @@ def predict(payload: BuildingInput):
         "model": "Random Forest (R² = 0.9813)",
         "status": "success"
     }
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=port)
