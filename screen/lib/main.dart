@@ -32,7 +32,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
   bool _isLoading = false;
   String? _result;
 
-  final String apiUrl = "https://summative-model.onrender.com/predict";
+  final String apiUrl = "https://summative-model.onrender.com/docs";
 
   final Map<String, TextEditingController> _controllers = {
     'Building_Type': TextEditingController(
