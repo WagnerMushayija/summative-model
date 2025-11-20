@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-void main() {
-  runApp(const EnergyPredictorApp());
-}
+void main() => runApp(const EnergyPredictorApp());
 
 class EnergyPredictorApp extends StatelessWidget {
   const EnergyPredictorApp({super.key});
@@ -13,16 +11,47 @@ class EnergyPredictorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Energy Predictor',
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: const PredictionScreen(),
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        // New Calm Color Palette
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF3B82F6),
+          primary: const Color(0xFF3B82F6),
+          secondary: const Color(0xFF10B981),
+          background: const Color(0xFFF8F9FA),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+        fontFamily: 'Roboto',
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF1F2937)),
+          bodyMedium: TextStyle(color: Color(0xFF4B5563)),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          labelStyle: const TextStyle(color: Color(0xFF4B5563)),
+          prefixIconColor: const Color(0xFF9CA3AF),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+          ),
+        ),
+      ),
+      home: const PredictionScreen(),
     );
   }
 }
 
 class PredictionScreen extends StatefulWidget {
   const PredictionScreen({super.key});
-
   @override
   State<PredictionScreen> createState() => _PredictionScreenState();
 }
@@ -31,13 +60,12 @@ class _PredictionScreenState extends State<PredictionScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   String? _result;
+  String? _modelInfo;
 
   final String apiUrl = "https://summative-model.onrender.com/predict";
 
   final Map<String, TextEditingController> _controllers = {
-    'Building_Type': TextEditingController(
-      text: 'Industrial',
-    ), // Default values for easy testing
+    'Building_Type': TextEditingController(text: 'Industrial'),
     'Square_Footage': TextEditingController(text: '40000'),
     'Number_of_Occupants': TextEditingController(text: '120'),
     'Appliances_Used': TextEditingController(text: '80'),
@@ -50,7 +78,8 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
     setState(() {
       _isLoading = true;
-      _result = "Waking up server... (first request can take up to 50 sec)";
+      _result = null;
+      _modelInfo = null;
     });
 
     try {
@@ -73,134 +102,154 @@ class _PredictionScreenState extends State<PredictionScreen> {
               "Day_of_Week": _controllers['Day_of_Week']!.text,
             }),
           )
-          .timeout(const Duration(seconds: 60)); // ← 60 sec timeout
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final predicted = data['predicted_energy_kwh'];
         setState(() {
-          _result =
-              "SUCCESS!\n${data['predicted_energy_kwh']} kWh\n${data['model']}";
+          _result = "⚡ $predicted kWh/day ⚡";
+          _modelInfo = data['model'];
         });
       } else {
         setState(() {
-          _result = "Error ${response.statusCode}: ${response.body}";
+          _result = "Server Error: ${response.statusCode}";
+          _modelInfo = "Please check the server status and try again.";
         });
       }
     } catch (e) {
       setState(() {
-        _result =
-            "Server is waking up or network issue.\nOpen this first:\nhttps://summative-model.onrender.com/docs\nThen try again.";
+        _result = "Connection Error";
+        _modelInfo = "Server might be waking up. Open /docs first then retry.";
       });
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Energy Predictor'),
-        backgroundColor: Colors.green[700],
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            // Prevents overlapping on small screens
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Enter Building Details',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                _buildField(
-                  'Building Type (e.g., Industrial)',
-                  _controllers['Building_Type']!,
-                  isNumber: false,
-                ),
-                _buildField(
-                  'Square Footage (500-100000)',
-                  _controllers['Square_Footage']!,
-                  isNumber: true,
-                ),
-                _buildField(
-                  'Number of Occupants (1-1000)',
-                  _controllers['Number_of_Occupants']!,
-                  isNumber: true,
-                ),
-                _buildField(
-                  'Appliances Used (1-300)',
-                  _controllers['Appliances_Used']!,
-                  isNumber: true,
-                ),
-                _buildField(
-                  'Average Temperature (10-40)',
-                  _controllers['Average_Temperature']!,
-                  isNumber: true,
-                ),
-                _buildField(
-                  'Day of Week (Weekday/Weekend)',
-                  _controllers['Day_of_Week']!,
-                  isNumber: false,
-                ),
-                const SizedBox(height: 30),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _predict,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[600],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            'PREDICT',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                if (_result != null)
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: _result!.contains('Error')
-                          ? Colors.red[50]
-                          : Colors.green[50],
-                      border: Border.all(
-                        color: _result!.contains('Error')
-                            ? Colors.red
-                            : Colors.green,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      _result!,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 500,
+            ), // Max width for larger screens
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    // New Minimalist Title
+                    const Text(
+                      'Energy Predictor',
                       textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111827),
+                      ),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Estimate Daily Building Consumption',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16, color: Color(0xFF6B7280)),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // Input Fields remain logically the same, but styled by the new theme
+                    _buildIconField(
+                      Icons.business_outlined,
+                      'Building Type',
+                      _controllers['Building_Type']!,
+                      false,
+                    ),
+                    _buildIconField(
+                      Icons.space_dashboard_outlined,
+                      'Square Footage',
+                      _controllers['Square_Footage']!,
+                      true,
+                    ),
+                    _buildIconField(
+                      Icons.groups_outlined,
+                      'Number of Occupants',
+                      _controllers['Number_of_Occupants']!,
+                      true,
+                    ),
+                    _buildIconField(
+                      Icons.electrical_services_outlined,
+                      'Appliances Used',
+                      _controllers['Appliances_Used']!,
+                      true,
+                    ),
+                    _buildIconField(
+                      Icons.thermostat_outlined,
+                      'Avg Temperature (°C)',
+                      _controllers['Average_Temperature']!,
+                      true,
+                    ),
+                    _buildIconField(
+                      Icons.calendar_today_outlined,
+                      'Day of Week',
+                      _controllers['Day_of_Week']!,
+                      false,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // New Minimalist Predict Button
+                    SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _predict,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 0, // A flatter, more modern look
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'PREDICT',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // New Minimalist Result Card
+                    if (_result != null)
+                      _buildResultCard(
+                        context: context,
+                        result: _result!,
+                        modelInfo: _modelInfo,
+                        isError: _result!.toLowerCase().contains('error'),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -208,11 +257,74 @@ class _PredictionScreenState extends State<PredictionScreen> {
     );
   }
 
-  Widget _buildField(
-    String label,
-    TextEditingController controller, {
-    required bool isNumber,
+  // Builder for the new result card widget
+  Widget _buildResultCard({
+    required BuildContext context,
+    required String result,
+    String? modelInfo,
+    bool isError = false,
   }) {
+    final successColor = Theme.of(context).colorScheme.secondary;
+    final errorColor = Colors.red[600]!;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        color: isError
+            ? errorColor.withOpacity(0.05)
+            : successColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isError ? errorColor : successColor,
+          width: 1.5,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Column(
+          children: [
+            Text(
+              isError ? 'Oops!' : 'Predicted Consumption',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+                color: isError ? errorColor : successColor,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              result,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: isError ? errorColor : const Color(0xFF111827),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (modelInfo != null) ...[
+              const SizedBox(height: 16),
+              Divider(color: Colors.grey[300]),
+              const SizedBox(height: 16),
+              Text(
+                modelInfo,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconField(
+    IconData icon,
+    String label,
+    TextEditingController controller,
+    bool isNumber,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
@@ -220,16 +332,15 @@ class _PredictionScreenState extends State<PredictionScreen> {
         keyboardType: isNumber
             ? const TextInputType.numberWithOptions(decimal: true)
             : TextInputType.text,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-          filled: true,
-          fillColor: Colors.grey[100],
+        style: const TextStyle(
+          color: Color(0xFF1F2937),
+          fontWeight: FontWeight.w500,
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Required field';
-          if (isNumber && double.tryParse(value) == null)
-            return 'Enter a number';
+        decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
+        validator: (v) {
+          if (v == null || v.isEmpty) return 'This field is required';
+          if (isNumber && double.tryParse(v) == null)
+            return 'Please enter a valid number';
           return null;
         },
       ),
@@ -238,7 +349,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
   @override
   void dispose() {
-    for (final controller in _controllers.values) {
+    for (var controller in _controllers.values) {
       controller.dispose();
     }
     super.dispose();
