@@ -78,7 +78,7 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
     setState(() {
       _isLoading = true;
-      _result = null;
+      _result = "⚡ Charging up the model...";
       _modelInfo = null;
     });
 
@@ -171,31 +171,31 @@ class _PredictionScreenState extends State<PredictionScreen> {
                     ),
                     _buildIconField(
                       Icons.space_dashboard_outlined,
-                      'Square Footage',
+                      'Square Footage (500–100000)',
                       _controllers['Square_Footage']!,
                       true,
                     ),
                     _buildIconField(
                       Icons.groups_outlined,
-                      'Number of Occupants',
+                      'Number of Occupants (1–1000)',
                       _controllers['Number_of_Occupants']!,
                       true,
                     ),
                     _buildIconField(
                       Icons.electrical_services_outlined,
-                      'Appliances Used',
+                      'Appliances Used (1–300)',
                       _controllers['Appliances_Used']!,
                       true,
                     ),
                     _buildIconField(
                       Icons.thermostat_outlined,
-                      'Avg Temperature (°C)',
+                      'Avg Temperature (°C) (10.0–40.0)',
                       _controllers['Average_Temperature']!,
                       true,
                     ),
                     _buildIconField(
                       Icons.calendar_today_outlined,
-                      'Day of Week',
+                      'Day of Week (Weekday/Weekend)',
                       _controllers['Day_of_Week']!,
                       false,
                     ),
