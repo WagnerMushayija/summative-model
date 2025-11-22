@@ -22,13 +22,15 @@ Example request (works in Swagger “Try it out”):
   "Average_Temperature": 25.0,
   "Day_of_Week": "Weekday"
 }
+```
 Response:
-JSON{
+``` JSON{
   "predicted_energy_kwh": 28.47,
   "unit": "kWh",
   "model": "Random Forest (R² = 0.9813)",
   "status": "success"
 }
+```
 How to Run the Mobile App
 Option 1 – Fastest (for anyone, including lecturer)
 
