@@ -50,7 +50,7 @@ Works on Android, iOS, Web, Windows, macOS, Linux.
 ├── models/
 │   └── best_energy_model_correct.pkl ← Trained Random Forest model
 ├── flutter_app/                     ← Beautiful Flutter mobile app
-├── notebook/                        ← Full EDA + training notebook
+├── Linear_Regression/                        ← Full EDA + training notebook
 └── README.md                        ← This file
 ```
 Valid Input Ranges (enforced by API + app)
