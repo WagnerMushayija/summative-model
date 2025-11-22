@@ -44,14 +44,15 @@ cd summative-model/flutter_app
 flutter pub get
 flutter run
 Works on Android, iOS, Web, Windows, macOS, Linux.
-Project Structure
-summative model/
+### Project Structure
+```summative model/
 ├── main.py                          ← FastAPI backend (live on Render)
 ├── models/
 │   └── best_energy_model_correct.pkl ← Trained Random Forest model
 ├── flutter_app/                     ← Beautiful Flutter mobile app
 ├── notebook/                        ← Full EDA + training notebook
 └── README.md                        ← This file
+```
 Valid Input Ranges (enforced by API + app)
 FieldAllowed Values / RangeBuilding TypeAny text (e.g. Residential, Industrial)Square Footage500 – 100,000Number of Occupants1 – 1,000Appliances Used1 – 300Avg Temperature °C10.0 – 40.0Day of WeekWeekday / Weekend
 Tech Stack
