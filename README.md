@@ -31,19 +31,32 @@ Response:
   "status": "success"
 }
 ```
-How to Run the Mobile App
-Option 1 – Fastest (for anyone, including lecturer)
+How to Run the Flutter App (Step-by-Step)
 
-Download the APK:
-https://github.com/WagnerMushayija/summative-model/releases/download/v1.0/EnergyPredictor.apk
-Install on any Android phone → open → fill the 6 fields → tap PREDICT → see your daily kWh forecast.
+### Prerequisites
+1. Install Flutter[](https://flutter.dev/docs/get-started/install)
+2. Android Studio / VS Code + Flutter plugin (recommended)
+3. A phone or emulator
 
-Option 2 – Run from source (developers)
-Bashgit clone https://github.com/WagnerMushayija/summative-model.git
-cd summative-model/flutter_app
-flutter pub get
-flutter run
-Works on Android, iOS, Web, Windows, macOS, Linux.
+### Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/WagnerMushyija/summative-model.git
+   cd summative-model/flutter_app```
+
+**Install dependencies
+```Bash
+flutter pub get```
+Open the project
+VS Code: code .
+Or open the flutter_app folder in Android Studio
+
+Make sure the API URL is correct
+Open lib/main.dart and verify this line points to your live Render URL:Dartfinal String apiUrl = "https://summative-model.onrender.com/predict";
+Run the app
+```Bash
+flutter run```
 ### Project Structure
 ```summative model/
 ├── main.py                          ← FastAPI backend (live on Render)
